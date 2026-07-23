@@ -1,58 +1,85 @@
-name: smart_bmi_analyzer
-description: "Smart BMI Analyzer by BeachWeather — an offline-first premium health companion."
-publish_to: 'none'
-version: 1.0.0+1
+name: Build Smart BMI Analyzer
 
-environment:
-  sdk: '>=3.3.0 <4.0.0'
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
-dependencies:
-  flutter:
-    sdk: flutter
+jobs:
+  build:
+    runs-on: windows-2022
 
-  # State management / routing
-  flutter_riverpod: ^2.5.1
-  go_router: ^14.2.0
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
 
-  # Local storage
-  hive: ^2.2.3
-  hive_flutter: ^1.1.0
-  shared_preferences: ^2.2.3
-  path_provider: ^2.1.3
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
 
-  # Charts & visuals
-  fl_chart: ^0.68.0
-  google_fonts: ^6.2.1
+      - name: Enable Windows Desktop
+        run: flutter config --enable-windows-desktop
 
-  # Notifications
-  flutter_local_notifications: ^17.2.2
-  timezone: ^0.9.4
-  permission_handler: ^11.3.1
+      - name: Flutter Doctor
+        run: flutter doctor -v
 
-  # Utilities
-  intl: ^0.19.0
-  uuid: ^4.4.0
-  cupertino_icons: ^1.0.8
+      - name: Install Dependencies
+        run: flutter pub get
 
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  hive_generator: ^2.0.1
-  build_runner: ^2.4.11
-  flutter_lints: ^4.0.0
-  msix: ^3.16.7
+      - name: Generate Windows Files
+        run: flutter create . --platforms=windows
 
-flutter:
-  uses-material-design: true
-  assets:
-    - assets/icons/
+      - name: Restore Signing Certificate
+        shell: pwsh
+        run: |
+          [System.IO.File]::WriteAllBytes(
+            "certificate.pfx",
+            [System.Convert]::FromBase64String("${{ secrets.MSIX_CERTIFICATE }}")
+          )
 
-msix_config:
-  display_name: Smart BMI Analyzer by beachweather
-  publisher_display_name: santhosh4816j
-  identity_name: santhosh4816j.SmartBMIAnalyzerbybeachweather
-  publisher: CN=56A045A8-7F10-4271-9A86-566887D6E7CD
-  msix_version: 1.0.0.0
-  logo_path: assets/icons/app_icon.png
-  capabilities: internetClient
-  languages: en-us
+      - name: Verify Certificate
+        shell: pwsh
+        run: |
+          if (Test-Path "certificate.pfx") {
+            Write-Host "certificate.pfx restored successfully."
+          } else {
+            Write-Error "certificate.pfx not found."
+            exit 1
+          }
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release
+
+      - name: Build Windows
+        run: flutter build windows --release
+
+      - name: Create MSIX
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+        run: dart run msix:create
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartBMIAnalyzer-APK
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartBMIAnalyzer-AAB
+          path: build/app/outputs/bundle/release/app-release.aab
+
+      - name: Upload MSIX
+        uses: actions/upload-artifact@v4
+        with:
+          name: SmartBMIAnalyzer-MSIX
+          path: build/windows/**/*.msix
