@@ -4,9 +4,6 @@ on:
   push:
     branches:
       - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 
 jobs:
@@ -31,8 +28,8 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
-      - name: Generate Windows Files
-        run: flutter create . --platforms=windows
+      - name: Generate Platform Files
+        run: flutter create . --platforms=android,windows
 
       - name: Restore Signing Certificate
         shell: pwsh
@@ -46,9 +43,9 @@ jobs:
         shell: pwsh
         run: |
           if (Test-Path "certificate.pfx") {
-            Write-Host "certificate.pfx restored successfully."
+            Write-Host "✅ certificate.pfx restored successfully."
           } else {
-            Write-Error "certificate.pfx not found."
+            Write-Error "❌ certificate.pfx not found."
             exit 1
           }
 
@@ -58,10 +55,10 @@ jobs:
       - name: Build Android App Bundle
         run: flutter build appbundle --release
 
-      - name: Build Windows
+      - name: Build Windows Release
         run: flutter build windows --release
 
-      - name: Create MSIX
+      - name: Create MSIX Package
         env:
           CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: dart run msix:create
@@ -72,7 +69,7 @@ jobs:
           name: SmartBMIAnalyzer-APK
           path: build/app/outputs/flutter-apk/app-release.apk
 
-      - name: Upload AAB
+      - name: Upload App Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SmartBMIAnalyzer-AAB
