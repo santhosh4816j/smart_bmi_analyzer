@@ -1,0 +1,11 @@
+# Copy this file to `local.properties` (same folder) and fill in the paths
+# for YOUR machine. Android Studio normally generates this automatically the
+# first time you open the project — you usually don't need to edit it by hand.
+#
+# Example (Windows):
+# sdk.dir=C\:\\Users\\YourName\\AppData\\Local\\Android\\Sdk
+# flutter.sdk=C\:\\src\\flutter
+#
+# Example (macOS/Linux):
+# sdk.dir=/Users/yourname/Library/Android/sdk
+# flutter.sdk=/Users/yourname/flutter
