@@ -3,27 +3,62 @@ name: Build MSIX
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
-          channel: 'stable'
-      - name: Enable Windows desktop
+          channel: stable
+
+      - name: Enable Windows Desktop
         run: flutter config --enable-windows-desktop
-      - name: Get dependencies
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Get Dependencies
         run: flutter pub get
-      - name: Build Windows release
+
+      - name: Generate Windows Files
+        run: flutter create . --platforms=windows
+
+      - name: Restore PFX Certificate
+        shell: pwsh
+        run: |
+          [System.IO.File]::WriteAllBytes(
+            "certificate.pfx",
+            [System.Convert]::FromBase64String("${{ secrets.MSIX_CERTIFICATE }}")
+          )
+
+      - name: Verify Certificate
+        shell: pwsh
+        run: |
+          if (Test-Path "certificate.pfx") {
+            Write-Host "certificate.pfx restored successfully."
+          } else {
+            Write-Error "certificate.pfx not found."
+            exit 1
+          }
+
+      - name: Build Windows Release
         run: flutter build windows --release
-      - name: Create MSIX package
+
+      - name: Create MSIX Package
+        env:
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
         run: dart run msix:create
-      - name: Upload MSIX artifact
+
+      - name: Upload MSIX Artifact
         uses: actions/upload-artifact@v4
         with:
           name: smart-bmi-analyzer-msix
-          path: build/windows/x64/runner/Release/*.msix
+          path: build/windows/**/*.msix
