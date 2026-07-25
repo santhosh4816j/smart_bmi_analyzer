@@ -1,0 +1,106 @@
+name: smart_bmi_analyzer
+description: "Smart BMI Analyzer by Beachweather — offline-first BMI, BMR, and nutrition companion."
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management
+  provider: ^6.1.2
+
+  # Local storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.3
+  path_provider: ^2.1.3
+
+  # UI / Theming
+  google_fonts: ^6.2.1
+  flutter_svg: ^2.0.10+1
+  lottie: ^3.1.2
+  animations: ^2.0.11
+  fl_chart: ^0.68.0
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.4.0
+  csv: ^6.0.0
+  pdf: ^3.11.0
+  printing: ^5.13.1
+  image_picker: ^1.1.2
+  permission_handler: ^11.3.1
+
+  # Windows Store packaging
+  msix: ^3.16.7
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.11
+  mockito: ^5.4.4
+  flutter_launcher_icons: ^0.13.1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/animations/
+    - assets/icons/
+    - assets/data/food_database.json
+
+# ==================================================================
+# MICROSOFT STORE / MSIX CONFIGURATION
+# ==================================================================
+# Run with: dart run msix:create
+# This block encodes the exact Partner Center identity supplied for
+# this app. Do NOT change identity_name / publisher / msix_publisher
+# unless the Partner Center listing itself changes — they must match
+# exactly or the package will be rejected on submission/update.
+msix_config:
+  display_name: Smart BMI Analyzer by Beachweather
+  publisher_display_name: santhosh4816j
+  identity_name: santhosh4816j.SmartBMIAnalyzerbybeachweather
+  msix_version: 1.0.0.0
+  publisher: CN=56A045A8-7F10-4271-9A86-566887D6E7CD
+  logo_path: assets/icons/app_icon_store.png
+  start_menu_icon_path: assets/icons/app_icon_store.png
+  tile_icon_path: assets/icons/app_icon_store.png
+  icons_background_color: transparent
+  architecture: x64
+  capabilities: "internetClient"
+  languages: en-us
+  store: true
+  # signing:
+  #   REQUIRED FOR RELEASE BUILDS ONLY.
+  #   During local/dev builds `dart run msix:create` will use a generated
+  #   test certificate automatically (fine for sideloading/testing).
+  #   For the build that actually ships to Partner Center, either:
+  #     (a) let Partner Center sign it during ingestion (recommended —
+  #         omit certificate_path/certificate_password entirely and
+  #         upload the unsigned .msix produced here), or
+  #     (b) sign locally with your own EV code-signing certificate:
+  #         certificate_path: C:\secrets\smart_bmi_analyzer.pfx
+  #         certificate_password: <set via environment/secret, never commit>
+  #   Never commit a real .pfx or its password to this repository.
+
+# ==================================================================
+# APP ICON GENERATION
+# ==================================================================
+# Run with: dart run flutter_launcher_icons
+# Generates the Android launcher icon set and a Windows .ico from a
+# single source image — the Beachweather palm/sun/wave mark.
+flutter_launcher_icons:
+  android: true
+  ios: false
+  windows:
+    generate: true
+    icon_size: 256
+  image_path: "assets/icons/icon.png"
