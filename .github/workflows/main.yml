@@ -33,6 +33,16 @@ jobs:
       - name: Enable Windows desktop
         run: flutter config --enable-windows-desktop
 
+      - name: Ensure windows/ platform folder exists
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "windows")) {
+            Write-Host "windows/ folder not found in repo — scaffolding it now."
+            flutter create . --platforms=windows
+          } else {
+            Write-Host "windows/ folder already present."
+          }
+
       - name: Install dependencies
         run: flutter pub get
 
@@ -57,6 +67,13 @@ jobs:
           name: smart-bmi-analyzer-windows-zip
           path: SmartBMIAnalyzer-Windows.zip
 
+      # NOTE: This produces an UNSIGNED .msix suitable for local sideload
+      # testing and for uploading directly to Partner Center (which can
+      # sign on ingestion). To ship a package signed with your own EV
+      # certificate instead, add the certificate as a repo secret, write
+      # it to disk in this step, and add `certificate_path` /
+      # `certificate_password` to the msix_config block in pubspec.yaml
+      # before running this command. Never commit a real .pfx to the repo.
       - name: Create MSIX package
         run: dart run msix:create
 
