@@ -5,7 +5,12 @@ import '../../constants/app_constants.dart';
 import '../root_shell.dart';
 
 class SplashScreen extends StatefulWidget {
-  const SplashScreen({super.key});
+  const SplashScreen({super.key, this.nextScreenBuilder});
+
+  /// Builds the screen to navigate to after the splash delay.
+  /// Defaults to [RootShell]; overridable in tests so widget tests
+  /// don't need the full provider/Hive setup RootShell depends on.
+  final Widget Function()? nextScreenBuilder;
 
   @override
   State<SplashScreen> createState() => _SplashScreenState();
@@ -34,7 +39,9 @@ class _SplashScreenState extends State<SplashScreen>
       () {
         if (!mounted) return;
         Navigator.of(context).pushReplacement(
-          MaterialPageRoute<void>(builder: (_) => const RootShell()),
+          MaterialPageRoute<void>(
+            builder: (_) => (widget.nextScreenBuilder ?? () => const RootShell())(),
+          ),
         );
       },
     );

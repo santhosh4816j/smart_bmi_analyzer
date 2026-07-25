@@ -12,7 +12,9 @@ void main() {
 
   testWidgets('SplashScreen renders the app name', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: SplashScreen()),
+      MaterialApp(
+        home: SplashScreen(nextScreenBuilder: () => const SizedBox.shrink()),
+      ),
     );
 
     expect(find.text('Smart BMI Analyzer'), findsOneWidget);

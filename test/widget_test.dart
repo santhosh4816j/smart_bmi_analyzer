@@ -12,7 +12,9 @@ void main() {
 
   testWidgets('App shell renders without crashing', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const MaterialApp(home: SplashScreen()),
+      MaterialApp(
+        home: SplashScreen(nextScreenBuilder: () => const SizedBox.shrink()),
+      ),
     );
 
     expect(find.byType(SplashScreen), findsOneWidget);
